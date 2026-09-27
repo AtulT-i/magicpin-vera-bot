@@ -1826,7 +1826,7 @@ def index():
           <td><span style="font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:#818CF8;">${{c.cta}}</span></td>
           <td style="white-space:nowrap;">
             <button class="action-btn" onclick="loadCaseInSimulator('${{c.merchant_id}}', '${{c.trigger_id}}')">▶️ Simulator</button>
-            <button class="action-btn" onclick='inspectJsonModal(${JSON.stringify(JSON.stringify(c))})'>🔍 JSON</button>
+            <button class="action-btn" onclick="inspectCaseById('${{c.test_id}}')">🔍 JSON</button>
           </td>
         </tr>
       `).join('');
@@ -1867,8 +1867,9 @@ def index():
       showToast('Loaded ' + mid + ' into WhatsApp Simulator!');
     }}
 
-    function inspectJsonModal(rawJsonStr) {{
-      const obj = typeof rawJsonStr === 'string' ? JSON.parse(rawJsonStr) : rawJsonStr;
+    function inspectCaseById(tid) {{
+      const obj = canonicalCasesData.find(x => x.test_id === tid);
+      if (!obj) return;
       document.getElementById('modal-title').innerText = 'Inspect Test: ' + (obj.test_id || 'Case');
       document.getElementById('modal-pre').innerText = JSON.stringify(obj, null, 2);
       document.getElementById('json-modal').style.display = 'flex';
