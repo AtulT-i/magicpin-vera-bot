@@ -2,7 +2,9 @@
 
 **Product**: Autonomous WhatsApp Merchant Engagement & Growth Engine  
 **Version**: 2.0.0  
-**Submission Artifacts**: `bot.py`, `conversation_handlers.py`, `server.py`, `submission.jsonl`, `README.md`
+**Live 24/7 Cloud URL**: [https://magicpin-vera-bot-xwkl.onrender.com](https://magicpin-vera-bot-xwkl.onrender.com)  
+**GitHub Repository**: [https://github.com/AtulT-i/magicpin-vera-bot](https://github.com/AtulT-i/magicpin-vera-bot)  
+**Official Submission Files**: `bot.py`, `conversation_handlers.py`, `server.py`, `submission.jsonl`, `README.md`
 
 ---
 
@@ -59,6 +61,7 @@ Implemented in `conversation_handlers.py`:
 - **Auto-Reply Signature Filter**: Catches canned WhatsApp Business auto-replies ("Thank you for contacting us...", "Our team will respond shortly", repeated identical messages). Gracefully terminates or waits, preventing 2-3 wasted turns.
 - **Instant Intent Routing**: When a merchant signals affirmative commitment ("Ok let's do it", "I want to join", "proceed"), the bot immediately switches to **ACTION mode** ("Done! Proceeding with your draft now...") and **never** re-qualifies with redundant questions.
 - **WhatsApp Opt-Out & Hostility Compliance**: Instantly respects "stop", "spam", and "unsubscribe", exiting with zero friction.
+- **Semantic Q&A Handlers**: Transparent answers for capabilities, pricing reassurance (confirming ₹0 extra charge under active magicpin plan), customer cohort recalls, and Google profile updates.
 
 ---
 
@@ -72,23 +75,34 @@ Exposes the 5 endpoints required by the challenge specification:
 | `POST` | `/v1/context` | Idempotent context ingestion with atomic version updates |
 | `POST` | `/v1/tick` | Proactive WhatsApp engagement composer |
 | `POST` | `/v1/reply` | Multi-turn auto-reply filter & intent transition router |
-| `GET` | `/` | Web dashboard & live context inspector |
+| `GET` | `/` | Web dashboard & live WhatsApp simulation console |
+| `GET` | `/submission.jsonl` | Direct download of the 30 canonical test outputs |
+| `GET` | `/api/submission_cases` | JSON API of the 30 test pairs with metadata |
 
 ---
 
 ## 6. How to Run & Verify
 
-### Start the API Server
+### Start the Local API Server
 ```bash
-python server.py --port 8080
+python server.py --port 8000
 ```
 
 ### Run Judge Simulator
 ```bash
+# Test against local server
 python judge_simulator.py
+
+# Or test against live 24/7 cloud server:
+BOT_URL=https://magicpin-vera-bot-xwkl.onrender.com python judge_simulator.py
 ```
 
-### Generate Submission JSONL
+### Run Automated Unit & E2E Test Suite
+```bash
+python test_server.py
+```
+
+### Re-Generate Submission JSONL
 ```bash
 python generate_submission.py
 ```
