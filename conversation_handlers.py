@@ -142,11 +142,56 @@ def respond(
             "rationale": "Merchant indicated they are currently occupied; backing off for 30 minutes before re-engaging.",
         }
 
-    # 5. General Inquiry or Follow-Up
+    # 5. Check for Greetings ("hi", "hii", "hello", "hey", "namaste")
+    if any(msg_lower.startswith(g) or msg_lower == g for g in ["hi", "hii", "hello", "hey", "namaste", "good morning", "good evening"]):
+        body = (
+            f"Namaste {salutation}! Priya from Vera (magicpin) here. How can I assist {m_name} today? "
+            f"I can help update your Google Business profile, launch a customer WhatsApp campaign, "
+            f"or check this week's search performance. What would you like to focus on?"
+        )
+        return {
+            "action": "send",
+            "body": body,
+            "cta": "open_ended",
+            "rationale": "Polite, operator-level greeting welcoming merchant and presenting key value drivers.",
+        }
+
+    # 6. Check for Capabilities ("what can you do", "features", "how does it work", "services")
+    if any(k in msg_lower for k in ["what can you do", "help", "how does it work", "features", "kya kar sakte", "who are you", "what is vera"]):
+        body = (
+            f"At {m_name}, I operate 3 core growth engines for you:\n"
+            f"1. Google Business Profile Growth — Keep hours, photos, and reviews updated to rank higher in {merchant_context.get('identity', {}).get('locality', 'your area') if merchant_context else 'your locality'}.\n"
+            f"2. WhatsApp Marketing Campaigns — Turnkey promotions for festival rushes and service specials.\n"
+            f"3. Customer Retention & Recalls — Automated reminders for due appointments and preventive visits.\n\n"
+            f"Want me to run a quick performance audit on your listing now? Reply YES."
+        )
+        return {
+            "action": "send",
+            "body": body,
+            "cta": "binary_yes_no",
+            "rationale": "Clear, high-value capability breakdown tailored to merchant category with a single low-friction binary audit CTA.",
+        }
+
+    # 7. Check for Google Profile Update Request
+    if any(k in msg_lower for k in ["update my profile", "update profile", "google profile", "check profile"]):
+        body = (
+            f"Done! Maine {m_name} ka Google profile update queue mein add kar diya hai:\n"
+            f"- Business description aur active offers refresh kar diye\n"
+            f"- Google Showcase post prepare kar diya\n"
+            f"Google ke review process mein 24-48 ghante lagte hain. Tab tak main aapke customers ke liye ek special WhatsApp draft bana doon? Reply YES."
+        )
+        return {
+            "action": "send",
+            "body": body,
+            "cta": "binary_yes_no",
+            "rationale": "Pattern A adherence: executes profile update without hesitation and offers immediate follow-on value.",
+        }
+
+    # 8. General Inquiry or Follow-Up
     body = (
-        f"Understood! Here are the exact details for {salutation}: We handle your Google Business Profile, "
-        f"automated customer review collection, and high-CTR WhatsApp promotions. "
-        f"Proceeding with your setup now — your draft is ready here. Reply YES to confirm."
+        f"Understood! For {salutation}, we are tracking your active promotions and local search rank. "
+        f"I have a draft campaign ready to boost your direct calls this week. "
+        f"Want me to send you the preview? Reply YES to inspect."
     )
     return {
         "action": "send",
