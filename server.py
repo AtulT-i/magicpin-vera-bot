@@ -733,6 +733,58 @@ def index():
       border-color: var(--accent);
     }}
 
+    .chat-suggestions-bar {{
+      background: #182229;
+      padding: 8px 12px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      scrollbar-width: none;
+    }}
+    .chat-suggestions-bar::-webkit-scrollbar {{ display: none; }}
+    .sugg-chip {{
+      background: rgba(37, 211, 102, 0.1);
+      border: 1px solid rgba(37, 211, 102, 0.25);
+      color: #25D366;
+      border-radius: 9999px;
+      padding: 5px 12px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }}
+    .sugg-chip:hover {{
+      background: #25D366;
+      color: #0B141A;
+      box-shadow: 0 0 10px rgba(37, 211, 102, 0.5);
+    }}
+    .bubble-actions {{
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 8px;
+    }}
+    .action-btn {{
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #FFF;
+      padding: 5px 10px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }}
+    .action-btn:hover {{
+      background: rgba(37, 211, 102, 0.2);
+      border-color: #25D366;
+      color: #25D366;
+    }}
+
     /* API Sandbox Tab */
     .sandbox-card {{
       background: var(--card-bg);
@@ -906,8 +958,19 @@ def index():
             </div>
           </div>
 
+          <div class="chat-suggestions-bar">
+            <span class="sugg-chip" onclick="fillTestReply('What can you do for my business?')">💡 What can you do?</span>
+            <span class="sugg-chip" onclick="fillTestReply('Show my Google search performance')">📊 Show Performance</span>
+            <span class="sugg-chip" onclick="fillTestReply('How much does Vera cost?')">💳 Pricing & Plan</span>
+            <span class="sugg-chip" onclick="fillTestReply('Draft a 6-month patient recall message')">🦷 Customer Recalls</span>
+            <span class="sugg-chip" onclick="fillTestReply('Update my Google profile')">⭐ Update Profile</span>
+            <span class="sugg-chip" onclick="fillTestReply('Ok lets do it. Whats next?')">⚡ Ok let's do it</span>
+            <span class="sugg-chip" onclick="fillTestReply('Thank you for contacting us! Our team will respond shortly.')">🤖 Auto-Reply Test</span>
+            <span class="sugg-chip" onclick="fillTestReply('Stop messaging me. This is useless spam.')">⛔ Opt-Out Test</span>
+          </div>
+
           <div class="wa-input-bar">
-            <input type="text" class="wa-input" id="wa-input" placeholder="Type merchant reply..." onkeydown="if(event.key==='Enter') sendMerchantReply();">
+            <input type="text" class="wa-input" id="wa-input" placeholder="Type message or tap a suggestion above..." onkeydown="if(event.key==='Enter') sendMerchantReply();">
             <button class="wa-send-btn" onclick="sendMerchantReply()">➤</button>
           </div>
         </div>
@@ -1129,11 +1192,29 @@ def index():
         currentConvId = 'conv_sim_' + Math.random().toString(36).substring(7);
         currentTurn = 1;
 
+        let actionButtonsHtml = '';
+        if (comp.body && comp.body.includes('Reply YES')) {
+          actionButtonsHtml = `
+            <div class="bubble-actions">
+              <button class="action-btn" onclick="fillTestReply('Yes, please proceed with this now')">✅ Reply YES</button>
+              <button class="action-btn" onclick="fillTestReply('Show me the exact preview')">👁️ Show Preview</button>
+            </div>
+          `;
+        } else if (comp.body && comp.body.includes('Reply 1')) {
+          actionButtonsHtml = `
+            <div class="bubble-actions">
+              <button class="action-btn" onclick="fillTestReply('1')">📅 1: First Slot</button>
+              <button class="action-btn" onclick="fillTestReply('2')">📅 2: Second Slot</button>
+            </div>
+          `;
+        }
+
         const bubble = document.createElement('div');
         bubble.className = 'wa-bubble wa-bot';
         bubble.innerHTML = `
           <div>${{comp.body}}</div>
           <div class="bubble-cta">👉 CTA: ${{comp.cta.toUpperCase()}}</div>
+          ${{actionButtonsHtml}}
           <div class="bubble-meta">${{timeStr}} • Sent as: ${{comp.send_as}}</div>
         `;
         chat.appendChild(bubble);
@@ -1184,16 +1265,26 @@ def index():
         bBubble.className = 'wa-bubble wa-bot';
         
         let contentHtml = '';
+        let replyActionsHtml = '';
         if (data.action === 'end') {{
           contentHtml = `<span style="color: #F87171; font-weight: 700;">[Conversation Ended Cleanly]</span><br><i>${{data.rationale}}</i>`;
         }} else if (data.action === 'wait') {{
           contentHtml = `<span style="color: #FBBF24; font-weight: 700;">[Backing off for ${{data.wait_seconds}}s]</span><br><i>${{data.rationale}}</i>`;
         }} else {{
-          contentHtml = `<div>${{data.body}}</div>`;
+          contentHtml = `<div>${{data.body.replace(/\\n/g, '<br>')}}</div>`;
+          if (data.body && data.body.includes('Reply YES')) {{
+            replyActionsHtml = `
+              <div class="bubble-actions">
+                <button class="action-btn" onclick="fillTestReply('Yes, please proceed with this now')">✅ Reply YES</button>
+                <button class="action-btn" onclick="fillTestReply('What can you do for my business?')">💡 Capabilities</button>
+              </div>
+            `;
+          }}
         }}
 
         bBubble.innerHTML = `
           ${{contentHtml}}
+          ${{replyActionsHtml}}
           <div class="bubble-meta">${{timeStr}} • Action: ${{data.action.toUpperCase()}}</div>
         `;
         chat.appendChild(bBubble);
